@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{ params.project_name }} — economics dashboard</title>
+    <style>
+      :root {
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        color: #1a1a1a;
+        background: #f6f7fb;
+      }
+      body {
+        margin: 0;
+        padding: 24px;
+      }
+      h1 {
+        margin: 0 0 8px;
+        font-size: 1.35rem;
+      }
+      .sub {
+        color: #555;
+        margin-bottom: 20px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+      @media (max-width: 960px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      .card {
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        padding: 14px 16px;
+      }
+      .card h2 {
+        margin: 0 0 10px;
+        font-size: 1.05rem;
+      }
+      dl {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px 12px;
+        margin: 0;
+      }
+      dt {
+        color: #666;
+        font-weight: 600;
+      }
+      dd {
+        margin: 0;
+        text-align: right;
+      }
+      .map iframe {
+        width: 100%;
+        height: 360px;
+        border: 0;
+        border-radius: 8px;
+      }
+      .note {
+        font-size: 0.9rem;
+        color: #555;
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>{{ params.project_name }}</h1>
+    <div class="sub">{{ params.asset_id }} · {{ "%.0f"|format(params.net_capacity_mw) }} MW net · {{ params.currency }}</div>
+
+    <div class="grid">
+      <div class="card">
+        <h2>Site</h2>
+        <div class="map">{{ map_html|safe }}</div>
+        <div class="note">Dummy coordinates in Schleswig-Holstein, Germany (WGS84).</div>
+      </div>
+
+      <div class="card">
+        <h2>Key parameters</h2>
+        <dl>
+          <dt>COD</dt>
+          <dd>{{ params.cod }}</dd>
+          <dt>Construction end</dt>
+          <dd>{{ params.construction_end }}</dd>
+          <dt>Analysis start</dt>
+          <dd>{{ params.analysis_start }}</dd>
+          <dt>Operating horizon</dt>
+          <dd>{{ params.operations_years }} years</dd>
+          <dt>PPA term (breakeven)</dt>
+          <dd>{{ params.ppa_term_years }} years</dd>
+          <dt>Discount rate</dt>
+          <dd>{{ "%.2f"|format(params.discount_rate_pct) }}%</dd>
+          <dt>Day-ahead zone</dt>
+          <dd>{{ params.bidding_zone }}</dd>
+          <dt>Total capex</dt>
+          <dd>{{ "%.1f"|format(params.total_capex_meur) }} M€</dd>
+          <dt>Specific capex</dt>
+          <dd>{{ "%.0f"|format(params.spec_capex_eur_per_kw) }} €/kW</dd>
+          <dt>Fixed O&amp;M</dt>
+          <dd>{{ "%.1f"|format(params.opex_fixed_eur_per_kw_y) }} €/kW-yr</dd>
+          <dt>Variable O&amp;M</dt>
+          <dd>{{ "%.2f"|format(params.opex_variable_eur_per_mwh) }} €/MWh</dd>
+          <dt>Implied net CF (Y1)</dt>
+          <dd>{{ "%.1f"|format(params.implied_cf_y1 * 100.0) }}%</dd>
+          <dt>Merchant NPV</dt>
+          <dd>{{ "%.1f"|format(params.npv_merchant_meur) }} M€</dd>
+          <dt>Merchant IRR</dt>
+          <dd>
+            {% if params.irr_merchant_pct is not none %}
+              {{ "%.2f"|format(params.irr_merchant_pct) }}%
+            {% else %}
+              n/a
+            {% endif %}
+          </dd>
+          <dt>Breakeven PPA (flat)</dt>
+          <dd>
+            {% if params.no_ppa_needed %}
+              0 €/MWh (no PPA needed)
+            {% else %}
+              {{ "%.2f"|format(params.breakeven_ppa) }} €/MWh
+            {% endif %}
+          </dd>
+          <dt>PV merchant rev. (PPA window)</dt>
+          <dd>{{ "%.1f"|format(params.pv_rev_ppa_win_meur) }} M€</dd>
+          <dt>PV MWh (PPA window)</dt>
+          <dd>{{ "%.3e"|format(params.pv_mwh_ppa_win) }} MWh·DF</dd>
+          <dt>Avg €/MWh (undisc.)</dt>
+          <dd>
+            {% if params.undisc_avg_ppa is not none %}
+              {{ "%.2f"|format(params.undisc_avg_ppa) }} €/MWh
+            {% else %}
+              n/a
+            {% endif %}
+          </dd>
+        </dl>
+      </div>
+
+      <div class="card" style="grid-column: 1 / -1">
+        <h2>Cashflows</h2>
+        {{ cashflow_chart|safe }}
+        <div class="note">
+          Construction years show booked capex as negative bars; operating years show merchant revenue (before opex in this chart).
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
