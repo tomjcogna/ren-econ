@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Merit order — breakeven PPA</title>
+    <style>
+      :root {
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        color: #1a1a1a;
+        background: #f6f7fb;
+      }
+      body {
+        margin: 0;
+        padding: 24px;
+      }
+      h1 {
+        margin: 0 0 8px;
+        font-size: 1.35rem;
+      }
+      .sub {
+        color: #555;
+        margin-bottom: 16px;
+      }
+      .card {
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        padding: 14px 16px;
+        margin-bottom: 16px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.92rem;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 8px 10px;
+        border-bottom: 1px solid #e8e8ef;
+      }
+      th {
+        color: #555;
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    {% if hub_index_href %}
+      <p style="margin: 0 0 12px"><a href="{{ hub_index_href }}">← Portfolio index</a></p>
+    {% endif %}
+    <h1>Merit order (breakeven PPA)</h1>
+    <p class="sub">
+      Projects ranked by <strong>flat breakeven PPA €/MWh</strong> (first 10 operating years, NPV = 0), <strong>cheapest first</strong>.
+    </p>
+
+    <div class="card">{{ merit_chart_html|safe }}</div>
+
+    <div class="card">
+      <h2 style="margin: 0 0 10px; font-size: 1.05rem">Ranked table</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Project</th>
+            <th>Breakeven PPA</th>
+            <th>Dashboard</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in projects_merit %}
+            <tr>
+              <td>{{ loop.index }}</td>
+              <td>{{ p.name }}<br /><span style="color:#666;font-size:0.85rem">{{ p.asset_id }}</span></td>
+              <td>
+                {% if p.no_ppa_needed %}
+                  0 €/MWh
+                {% else %}
+                  {{ "%.2f"|format(p.breakeven_ppa_eur_mwh) }} €/MWh
+                {% endif %}
+              </td>
+              <td><a href="dashboard_{{ p.asset_id }}.html">Open</a></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </body>
+</html>

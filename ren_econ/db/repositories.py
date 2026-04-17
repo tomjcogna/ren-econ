@@ -9,6 +9,13 @@ from sqlalchemy import create_engine, text
 from ren_econ.models.project import ProjectContext
 
 
+def list_asset_ids(db_path: Path) -> list[str]:
+    engine = create_engine(f"sqlite:///{db_path}", future=True)
+    q = text("SELECT asset_id FROM assets ORDER BY asset_id")
+    with engine.connect() as conn:
+        return [r[0] for r in conn.execute(q)]
+
+
 def load_asset(db_path: Path, asset_id: str) -> ProjectContext:
     engine = create_engine(f"sqlite:///{db_path}", future=True)
     q = text(
@@ -37,7 +44,8 @@ def load_asset(db_path: Path, asset_id: str) -> ProjectContext:
 
 def load_merged_hourly(db_path: Path, asset_id: str) -> pd.DataFrame:
     """
-    Return hourly merged table for the asset's bidding zone:
+    Hourly table for one asset: merged generation with **that asset's** wholesale curve.
+
     columns: ts_utc (datetime64[ns, UTC]), mwh_net, price_eur_per_mwh
     """
     engine = create_engine(f"sqlite:///{db_path}", future=True)
@@ -48,10 +56,7 @@ def load_merged_hourly(db_path: Path, asset_id: str) -> pd.DataFrame:
                p.price_eur_per_mwh AS price_eur_per_mwh
         FROM generation_hourly g
         JOIN day_ahead_prices_hourly p
-          ON p.ts_utc = g.ts_utc
-         AND p.bidding_zone_id = (
-             SELECT bidding_zone_id FROM assets WHERE asset_id = g.asset_id
-         )
+          ON p.asset_id = g.asset_id AND p.ts_utc = g.ts_utc
         WHERE g.asset_id = :aid
         ORDER BY g.ts_utc
         """

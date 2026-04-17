@@ -22,11 +22,12 @@ def default_dummy_costs(ctx: ProjectContext) -> CostInputs:
     Placeholder cost function: swap for your internal estimator.
 
     Uses a simple 2-year construction capex spread before COD.
+    Capex / OPEX vary slightly by `project_id` so breakeven PPA differs across sites.
     """
     mw = ctx.net_capacity_mw
     kw = mw * 1000.0
-    # Rough onshore DE benchmark: EUR/kW installed (toy numbers)
-    specific_capex_eur_per_kw = 1180.0
+    h = sum(ord(c) for c in ctx.project_id)
+    specific_capex_eur_per_kw = 1080.0 + (h % 28) * 4.0  # ~1080–1188 €/kW
     total_capex = specific_capex_eur_per_kw * kw
 
     cod_year = ctx.cod.year
@@ -34,10 +35,12 @@ def default_dummy_costs(ctx: ProjectContext) -> CostInputs:
     years_build = max(1, cod_year - start_year)
     per_year = total_capex / years_build
     capex_by_year = {y: per_year for y in range(start_year, cod_year)}
+    opex_fixed = 34.0 + (h % 9) * 0.6
+    opex_var = 2.4 + (h % 5) * 0.15
     return CostInputs(
         capex_by_year=capex_by_year,
-        opex_fixed_eur_per_kw_year=38.0,
-        opex_variable_eur_per_mwh=2.8,
+        opex_fixed_eur_per_kw_year=float(opex_fixed),
+        opex_variable_eur_per_mwh=float(opex_var),
     )
 
 

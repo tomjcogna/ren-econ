@@ -70,6 +70,11 @@
     </style>
   </head>
   <body>
+    {% if params.hub_index_href %}
+      <p style="margin: 0 0 12px">
+        <a href="{{ params.hub_index_href }}">← All projects</a>
+      </p>
+    {% endif %}
     <h1>{{ params.project_name }}</h1>
     <div class="sub">{{ params.asset_id }} · {{ "%.0f"|format(params.net_capacity_mw) }} MW net · {{ params.currency }}</div>
 
@@ -77,7 +82,7 @@
       <div class="card">
         <h2>Site</h2>
         <div class="map">{{ map_html|safe }}</div>
-        <div class="note">Dummy coordinates in Schleswig-Holstein, Germany (WGS84).</div>
+        <div class="note">Dummy site in Schleswig-Holstein, Germany. Map tiles load from OpenStreetMap when viewed online. Revenue split (wholesale vs PPA strip) is in the cashflow chart below.</div>
       </div>
 
       <div class="card">
@@ -117,6 +122,8 @@
               n/a
             {% endif %}
           </dd>
+          <dt>Wholesale (Y1, implied)</dt>
+          <dd>{{ "%.2f"|format(params.wholesale_y1_eur_mwh) }} €/MWh</dd>
           <dt>Breakeven PPA (flat)</dt>
           <dd>
             {% if params.no_ppa_needed %}
@@ -128,7 +135,7 @@
           <dt>PV merchant rev. (PPA window)</dt>
           <dd>{{ "%.1f"|format(params.pv_rev_ppa_win_meur) }} M€</dd>
           <dt>PV MWh (PPA window)</dt>
-          <dd>{{ "%.3e"|format(params.pv_mwh_ppa_win) }} MWh·DF</dd>
+          <dd>{{ params.pv_mwh_ppa_win_fmt }} MWh·DF</dd>
           <dt>Avg €/MWh (undisc.)</dt>
           <dd>
             {% if params.undisc_avg_ppa is not none %}
@@ -144,7 +151,8 @@
         <h2>Cashflows</h2>
         {{ cashflow_chart|safe }}
         <div class="note">
-          Construction years show booked capex as negative bars; operating years show merchant revenue (before opex in this chart).
+          <strong>Wholesale</strong> bars use simulated day-ahead prices × generation (before opex).
+          <strong>PPA contract</strong> bars show the same energy valued at the model’s flat breakeven strike for operating years 1–10 only (for comparison with wholesale, not an additive “extra” revenue row in the accounts).
         </div>
       </div>
     </div>

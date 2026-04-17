@@ -25,6 +25,9 @@ ren-econ = "ren_econ.cli:main"
 [tool.hatch.build.targets.wheel]
 packages = ["ren_econ"]
 
+[tool.hatch.build.targets.sdist]
+include = ["ren_econ", "README.md", "pyproject.toml"]
+
 [tool.ruff]
 line-length = 100
 target-version = "py311"
